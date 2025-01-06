@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  quickauth:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: quickauth-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/quickauth_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - quickauth-network
+
+  db:
+    image: mysql:8.0
+    container_name: quickauth-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=quickauth_db
+    volumes:
+      - mysql-data:/var/lib/mysql  # Persistência de dados
+    ports:
+      - "3306:3306"  # Mapeia a porta do MySQL
+    networks:
+      - quickauth-network
+
+  redis:
+    image: redis:latest
+    container_name: quickauth-redis
+    ports:
+      - "6379:6379"  # Mapeia a porta do Redis
+    networks:
+      - quickauth-network
+
+volumes:
+  mysql-data:
+
+networks:
+  quickauth-network:
+    driver: bridge
